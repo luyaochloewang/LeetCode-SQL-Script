@@ -1,0 +1,124 @@
+#175. Combine Two Tables
+SELECT Person.FirstName, Person.LastName, Address.City, Address.State from Person 
+LEFT JOIN Address on Person.PersonId = Address.PersonId;
+
+#176. Second Highest Salary
+# Select the second from the table
+select (
+  select distinct Salary from Employee order by Salary Desc limit 1 offset 1
+)as SecondHighestSalary
+
+#177. Nth Highest Salary
+CREATE FUNCTION getNthHighestSalary(N INT) RETURNS INT
+BEGIN
+DECLARE M INT;
+SET M=N-1;
+  RETURN (
+      SELECT DISTINCT Salary FROM Employee ORDER BY Salary DESC LIMIT M, 1
+  );
+END
+** LIMIT M, 1 is equivalent to LIMIT 1 OFFSET M
+
+#178. Rank Scores
+SELECT s.Score as Score,
+DENSE_RANK() OVER (ORDER BY s.Score DESC) as Rank
+FROM Scores s
+** DENSE_RANK, it is 112344 
+
+#180. Consecutive Numbers
+select distinct Num as ConsecutiveNums
+from Logs
+where (Id + 1, Num) in (select * from Logs) and (Id + 2, Num) in (select * from Logs)
+
+#181. Employees Earning More Than Their Managers
+select E1.Name 
+from Employee as E1, Employee as E2 
+where E1.ManagerId = E2.Id and E1.Salary > E2.Salary
+
+#182. Duplicate Emails
+Select email from person 
+group by email
+having count(*) >1
+
+#183. Customers Who Never Order
+SELECT A.Name from Customers A
+LEFT JOIN Orders B on  a.Id = B.CustomerId
+WHERE b.CustomerId is NULL
+
+
+#184. Department Highest Salary
+Select D.name Department, E.Name Employee, E.Salary from Employee E
+inner join Department D on E.DepartmentId = D.Id
+where (DepartmentId, Salary) in 
+(select DepartmentId, max(Salary) as max from employee group by departmentId)
+
+#185. Department Top Three Salaries
+SELECT Department, employee, salary FROM 
+(SELECT d.name AS Department, e.name AS employee, e.salary,
+    DENSE_RANK() OVER (PARTITION BY d.name ORDER BY e.salary DESC) AS drk
+    FROM Employee e JOIN Department d ON e.DepartmentId= d.Id
+) t 
+WHERE t.drk <= 3
+
+#196. Delete Duplicate Emails
+DELETE p1
+FROM Person p1, Person p2
+WHERE p1.Email = p2.Email 
+AND p1.Id > p2.Id
+*Delete part of the table
+
+#197. Rising Temperature
+SELECT t1.Id
+FROM Weather t1
+INNER JOIN Weather t2
+ON TO_DAYS(t1.recordDate) = TO_DAYS(t2.recordDate) + 1
+WHERE t1.Temperature > t2.Temperature
+*TO_DAYS Add one more day to date formate
+
+#262. Trips and Users
+select t.Request_at Day,ROUND((count(IF(t.status!='completed',TRUE,null))/count(*)),2) as 'Cancellation Rate'
+from Trips t 
+where t.Client_Id in (Select Users_Id from Users where Banned='No') 
+and t.Driver_Id in (Select Users_Id from Users where Banned='No')
+and t.Request_at between '2013-10-01' and '2013-10-03'
+group by t.Request_at;
+
+#511. Game Play Analysis I
+select player_id, min(event_date) as first_login
+from activity 
+group by player_id
+
+#512. Game Play Analysis II
+select distinct player_id, first_value(device_id) over (partition by player_id order by event_date) device_id
+from activity
+*Window Function -- First_value
+
+#513. Game Play Analysis III
+select player_id, event_date, sum(games_played) over(partition by player_id order by event_date) as games_played_so_far
+from Activity a
+order by player_id
+*Windows Function -- Sum Over 
+
+#550. Game Play Analysis IV
+SELECT ROUND( COUNT(t2.player_id) / COUNT(t1.player_id), 2 ) AS fraction
+FROM (SELECT DISTINCT player_id, MIN(event_date) AS first_day FROM activity GROUP BY player_id ) t1
+LEFT JOIN activity t2 ON t1.player_id = t2.player_id 
+AND t1.first_day + 1 = t2.event_date
+
+#569. Median Employee Salary
+SELECT ROUND( COUNT(t2.player_id) / COUNT(t1.player_id), 2 ) AS fraction
+FROM (SELECT DISTINCT player_id, MIN(event_date) AS first_day FROM activity GROUP BY player_id ) t1
+LEFT JOIN activity t2 ON t1.player_id = t2.player_id 
+AND t1.first_day + 1 = t2.event_date
+*find the median salary of each company
+
+#570. Managers with at Least 5 Direct Reports
+select name from employee 
+where id in 
+(select managerId from Employee group by managerId having count(managerId)>=5) 
+
+#571. Find Median Given Frequency of Numbers
+select  avg(n.Number) median
+from Numbers n
+where n.Frequency >= abs((select sum(Frequency) from Numbers where Number<=n.Number) -
+                         (select sum(Frequency) from Numbers where Number>=n.Number))
