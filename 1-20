@@ -122,3 +122,10 @@ select  avg(n.Number) median
 from Numbers n
 where n.Frequency >= abs((select sum(Frequency) from Numbers where Number<=n.Number) -
                          (select sum(Frequency) from Numbers where Number>=n.Number))
+2nd method
+with t as (select *, sum(frequency) over(order by number) freq, (sum(frequency) over())/2 median_num
+           from numbers)
+           
+select avg(number) as median
+from t
+where median_num between (freq-frequency) and freq
