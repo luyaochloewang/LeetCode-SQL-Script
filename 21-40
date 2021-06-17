@@ -9,35 +9,60 @@ left join Bonus on Employee.empId = Bonus.empId
 where Bonus.bonus < 1000 or Bonus.bonus IS NULL;
 
 #578. Get Highest Answer Rate Question
+WITH tmp as (
+SELECT question_id, sum(case when answer_id is not null then 1 else 0 end)/count(*) as rate
+from survey_log 
+group by question_id)
+
+select question_id as survey_log 
+from tmp
+where rate in (select max(rate) from tmp)
+
+#579. Find Cumulative Salary of an Employee
 select e.id, e.month, 
        sum(e.salary)over(partition by e.id order by e.month rows between 2 preceding and current row) salary
 from employee e
 where e.month<>(select max(e1.month) from employee e1 where e1.id=e.id  )
 order by 1 asc, 2 desc
 
-#579. Find Cumulative Salary of an Employee
+#580. Count Student Number in Departments
 Select department.dept_name, count(student.dept_id) student_number from department 
 left join student on student.dept_id =  department.dept_id
 group by department.dept_name
-order by student_number DESC, department.dept_name;
+order by student_number DESC, department.dept_name; 
 
-#580. Count Student Number in Departments
+#584. Find Customer Referee
 Select name from customer
 where referee_id != 2 OR referee_id IS NULL;
 
-
-#584. Find Customer Referee
 #585. Investments in 2016
+Select sum(TIV_2016) TIV_2016 from insurance a
+where (Select count(*) from insurance b where a.TIV_2015=b.TIV_2015)>1
+and (Select count(*) from insurance c where (a.LAT, a.LON) = (c.LAT, c.LON))=1;
+
 #586. Customer Placing the Largest Number of Orders
+select customer_number from orders
+group by customer_number
+order by count(customer_number)  DESC
+limit 1
+
 #595. Big Countries
+Select name, population, area from World
+Where population > 25000000 or area > 3000000
+order by name;
+
 #596. Classes More Than 5 Students
-#
-#
-#
-#
-#
-#
-#
-#
-#
-#
+Select class FROM courses
+GROUP BY class
+Having count( DISTINCT student)>=5; # highlight distinct 
+
+#597. Friend Requests I: Overall Acceptance Rate
+#601. Human Traffic of Stadium
+#602. Friend Requests II: Who Has the Most Friends
+#603. Consecutive Available Seats
+#607. Sales Person
+#608. Tree Node
+#610. Triangle Judgement
+#612. Shortest Distance in a Plane
+#613. Shortest Distance in a Line
+#614. Second Degree Follower
