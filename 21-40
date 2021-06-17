@@ -1,6 +1,20 @@
 #574. Winning Candidate
+SELECT Candidate.Name FROM Candidate 
+WHERE id = (SELECT CandidateId FROM Vote GROUP BY CandidateId ORDER BY count(id) DESC LIMIT 1)
+
 #577. Employee Bonus
+Select Employee.name, Bonus.bonus
+from Employee 
+left join Bonus on Employee.empId = Bonus.empId
+where Bonus.bonus < 1000 or Bonus.bonus IS NULL;
+
 #578. Get Highest Answer Rate Question
+select e.id, e.month, 
+       sum(e.salary)over(partition by e.id order by e.month rows between 2 preceding and current row) salary
+from employee e
+where e.month<>(select max(e1.month) from employee e1 where e1.id=e.id  )
+order by 1 asc, 2 desc
+
 #579. Find Cumulative Salary of an Employee
 #580. Count Student Number in Departments
 #584. Find Customer Referee
