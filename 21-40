@@ -121,6 +121,18 @@ CASE WHEN x+y<=z OR
 END AS 'triangle'
 FROM triangle;
 
-#612. Shortest Distance in a Plane
+#612. Shortest Distance in a Plane ***
+select ROUND(SQRT(min((p1.x-p2.x)*(p1.x-p2.x)+(p1.y-p2.y)*(p1.y-p2.y))),2) as shortest
+from point_2d p1,point_2d p2
+where p1.x <> p2.x or p1.y <> p2.y;
+
 #613. Shortest Distance in a Line
+SELECT MIN(a.x - b.x) AS shortest
+FROM point a, point b
+WHERE a.x > b.x; 
+
 #614. Second Degree Follower
+Select f1.follower, count(distinct f2.follower) as num
+from follow f1
+inner join follow f2 on f1.follower = f2.followee
+Group by f1.follower
