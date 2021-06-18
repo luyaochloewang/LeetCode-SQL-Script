@@ -57,12 +57,70 @@ GROUP BY class
 Having count( DISTINCT student)>=5; # highlight distinct 
 
 #597. Friend Requests I: Overall Acceptance Rate
-#601. Human Traffic of Stadium
+#Distinct two columns 
+Select round(ifnull(count(distinct requester_id, accepter_id)/count(distinct sender_id, send_to_id),0),2) accept_rate 
+from FriendRequest, RequestAccepted
+
+#601. Human Traffic of Stadium ***
+with rank_diff as (select *, rank() over (order by id asc) as `rank`,id - rank() over (order by id asc) as difference
+from stadium where people >= 100), 
+diff_counts as (
+select  difference,
+count(*) as count
+from rank_diff 
+group by difference)
+
+select id, visit_date, people
+from rank_diff
+where difference in (select difference from diff_counts where count >= 3)
+order by visit_date asc
+
 #602. Friend Requests II: Who Has the Most Friends
+###Self-Join two table, Union all pairs. 
+select id1 as id, count(id2) as num
+from
+(select requester_id as id1, accepter_id as id2 
+from request_accepted
+union
+select accepter_id as id1, requester_id as id2 
+from request_accepted) tmp1
+group by id1 
+order by num desc limit 1
+
+
 #603. Consecutive Available Seats
+Select seat_id from (
+Select seat_id, free, LAG(free,1) Over (Order By seat_id) as Free_lag, 
+LEAD(free,1) Over (Order By seat_id) as Free_lead from cinema) as t
+where (free = 1 and Free_lag = 1)
+or (free = 1 and Free_lead = 1)
+order by seat_id;
+
 #607. Sales Person
+Select s.name from salesperson s
+where sales_id not in (select sales_id from orders 
+                      left join company on orders.com_id = company.com_id
+                      where company.name = 'RED')
+
 #608. Tree Node
+#Self-join two table with CASE WHEN FUNCTION
+Select DISTINCT t1.id, (case when t1.p_id IS NULL then 'Root'
+           when t1.p_id IS NOT NULL and t2.id IS NOT NULL then 'Inner'
+           when t1.p_id IS NOT NULL and t2.id IS NULL then 'Leaf'
+           END) as Type
+From Tree t1 Left Join tree t2
+on t1.id = t2.p_id
+
 #610. Triangle Judgement
+SELECT x, y, z,
+CASE WHEN x+y<=z OR
+          x+z<=y OR
+          y+z<=x
+     THEN 'No'
+     ELSE 'Yes'
+END AS 'triangle'
+FROM triangle;
+
 #612. Shortest Distance in a Plane
 #613. Shortest Distance in a Line
 #614. Second Degree Follower
