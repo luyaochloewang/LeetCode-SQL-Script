@@ -18,7 +18,7 @@ select cte1.pay_month, cte.department_id,
  left join cte1
  on cte.pay_month= cte1.pay_month;
 
-#618. Students Report By Geography
+#618. Students Report By Geography ***
 with murica as
 (select name as america, row_number() over(order by name) as row_num 
 from student
@@ -34,15 +34,42 @@ select america, asia, europe
 from murica a
 left join asia aa on a.row_num = aa.row_num
 left join europe e on a.row_num = e.row_num
+
 #619. Biggest Single Number
-#620. Not Boring Movies
+SELECT MAX(num) AS num
+FROM (SELECT num FROM my_numbers GROUP BY num HAVING COUNT(num) = 1) AS t;
+
+#620. Not Boring Movies 
+# find all odd result, use (column % 2)
+# Return the remainder of 18/4 (SELECT 18 MOD 4;) 
+Select * from Cinema
+where (id % 2) = 1
+and description <> 'boring'
+order by rating desc 
+
 #626. Exchange Seats
+Select if(id < (select count(*) from seat), if(id mod 2=0, id-1, id+1), if(id mod 2=0, id-1, id)) as id, student
+from seat 
+order by id asc;
+
 #627. Swap Salary
+# Update method. use CASE WHEN to swap
+UPDATE salary
+SET sex  = (CASE WHEN sex = 'm' 
+            THEN  'f' 
+            ELSE 'm' 
+            END)
+            
 #1045. Customers Who Bought All Products
+
 #1050. Actors and Directors Who Cooperated At Least Three Times
+
 #1068. Product Sales Analysis I
+
 #1069. Product Sales Analysis II
+
 #1070. Product Sales Analysis III
+
 #
 #
 #
