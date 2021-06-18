@@ -1,14 +1,48 @@
-#615. Average Salary: Departments VS Company
-#
-#
-#
-#
-#
-#
-#
-#
-#
-#
+#615. Average Salary: Departments VS Company ***
+with cte as (select date_format(s.pay_date,'%Y-%m') as pay_month, e.department_id, avg(s.amount) as avg_amount
+from salary s
+join employee e on s.employee_id = e.employee_id
+group by pay_month, e.department_id),
+
+cte1 as (select date_format(pay_date,'%Y-%m') as pay_month, avg(amount) as am
+from salary 
+group by pay_month)
+
+select cte1.pay_month, cte.department_id, 
+           case when cte.avg_amount > cte1.am then 'higher'
+                when cte.avg_amount < cte1.am then 'lower'
+                when cte.avg_amount = cte1.am then 'same'
+                else null
+           end as comparison
+ from cte
+ left join cte1
+ on cte.pay_month= cte1.pay_month;
+
+#618. Students Report By Geography
+with murica as
+(select name as america, row_number() over(order by name) as row_num 
+from student
+where continent = 'America'),
+asia as
+(select name as asia, row_number() over(order by name) as row_num
+from student
+where continent = 'Asia'), europe as
+(select name as europe, row_number() over(order by name) as row_num
+from student
+where continent = 'Europe')
+select america, asia, europe
+from murica a
+left join asia aa on a.row_num = aa.row_num
+left join europe e on a.row_num = e.row_num
+#619. Biggest Single Number
+#620. Not Boring Movies
+#626. Exchange Seats
+#627. Swap Salary
+#1045. Customers Who Bought All Products
+#1050. Actors and Directors Who Cooperated At Least Three Times
+#1068. Product Sales Analysis I
+#1069. Product Sales Analysis II
+#1070. Product Sales Analysis III
 #
 #
 #
