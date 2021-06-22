@@ -90,11 +90,106 @@ FROM Sales
 GROUP BY product_id);
 
 #1075. Project Employees I
+select A.project_id, round(avg(A.experience_years), 2) as average_years from
+(select p.project_id, p.employee_id, e.experience_years from Project p INNER JOIN Employee e ON
+p.employee_id = e.employee_id) as A 
+GROUP BY A.project_id
+
 #1076. Project Employees II
+**have to use subquary to find the accurate result
+SELECT project_id
+FROM project
+GROUP BY project_id
+HAVING COUNT(employee_id) =
+(
+    SELECT count(employee_id)
+    FROM project
+    GROUP BY project_id
+    ORDER BY count(employee_id) desc
+    LIMIT 1
+)
+
 #1077. Project Employees III
+**Method 1
+With cte as (select p.project_id, p.employee_id, rank() over (partition by p.project_id order by e.experience_years desc) new_ranking 
+             from project p inner join employee e on p.employee_id = e.employee_id )
+             
+
+Select cte.project_id, cte.employee_id from cte
+where new_ranking = 1
+**Method 2
+select t.project_id, t.employee_id
+from
+    (select project_id,
+    p.employee_id,
+    rank() over(partition by project_id order by experience_years desc) as rank
+    from Project p join Employee e
+    on p.employee_id = e.employee_id) t
+where t.rank = 1;
+
 #1082. Sales Analysis I
+*When we need more than one results after group by -- Subquary(>=)
+Select seller_id from Sales 
+group by seller_id
+having sum(price) >= all (select price from sales group by seller_id)
+
 #1083. Sales Analysis II
+**Method 1
+Select s.buyer_id from sales s
+inner join product p on s.product_id = p.product_id
+where p.product_name = 'S8' 
+and s.buyer_id not in (select distinct s.buyer_id from sales s inner join product p on s.product_id = p.product_id 
+                      where p.product_name = 'iPhone')
+
+**Method 2
+SELECT s.buyer_id
+FROM Sales AS s INNER JOIN Product AS p
+ON s.product_id = p.product_id
+GROUP BY s.buyer_id
+HAVING SUM(CASE WHEN p.product_name = 'S8' THEN 1 ELSE 0 END) > 0
+AND SUM(CASE WHEN p.product_name = 'iPhone' THEN 1 ELSE 0 END) = 0;
+
 #1084. Sales Analysis III
+SELECT s.product_id, p.product_name
+FROM Sales AS s INNER JOIN Product AS p
+ON s.product_id = p.product_id
+GROUP BY s.product_id
+HAVING MIN(s.sale_date) >= '2019-01-01' AND MAX(s.sale_date) <= '2019-03-31'
+
 #1097. Game Play Analysis V
+SELECT install_dt, COUNT(player_id) AS installs,
+ROUND(COUNT(next_day) / COUNT(player_id), 2) AS Day1_retention
+FROM (
+    SELECT a1.player_id, a1.install_dt, a2.event_date AS next_day
+    FROM
+    (
+        SELECT player_id, MIN(event_date) AS install_dt 
+        FROM Activity
+        GROUP BY player_id
+    ) AS a1 
+    LEFT JOIN Activity AS a2
+    ON a1.player_id = a2.player_id
+    AND a2.event_date = a1.install_dt + 1
+) AS t
+GROUP BY install_dt;
+
 #1098. Unpopular Books
+SELECT book_id, 
+       name
+FROM Books
+WHERE available_from < '2019-05-23'
+AND book_id NOT IN
+            (SELECT book_id
+             FROM Orders
+             WHERE dispatch_date BETWEEN '2018-06-23' AND '2019-06-23'
+             GROUP BY book_id
+             Having sum(quantity) >= 10)
+
 #1107. New Users Daily Count
+select login_date, count(1) user_count
+from (select user_id, min(activity_date) login_date
+from traffic
+where activity = 'login'
+group by user_id) a
+where login_date between date_add('2019-06-30', interval -90 day) and '2019-06-30'
+group by login_date
