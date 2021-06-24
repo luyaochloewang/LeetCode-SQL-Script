@@ -75,12 +75,63 @@ WHERE extra='spam' and action = 'report'
 GROUP BY action_date)tmp
 
 #1141. User Activity for the Past 30 Days I
+**Datediff(a,b) a-b<30
+**WHERE activity_date >= '2019-06-28' and activity_date <= '2019-07-27'
+SELECT activity_date day,  count(distinct user_id) as active_users from Activity
+Where datediff('2019-07-27', activity_date) < 30
+group by activity_date
+
 #1142. User Activity for the Past 30 Days II
+**IFNULL for having a result as 0.00 format
+select ifnull(round(count(distinct session_id)/count(distinct user_id),2),0.00) as average_sessions_per_user
+from activity
+where datediff('2019-07-27', activity_date) < 30
+
 #1148. Article Views I
+select distinct author_id as id
+from views
+where author_id = viewer_id
+order by 1
+
 #1149. Article Views II
+Select distinct viewer_id id from views 
+group by viewer_id, view_date 
+having count(distinct article_id) >1
+order by 1
+
 #1158. Market Analysis I
-#1159. Market Analysis II
+** Find Year from a date YEAR(column) = '2019'
+SELECT user_id AS buyer_id, join_date, COALESCE(COUNT(o.order_id),0) AS orders_in_2019 FROM Users u
+LEFT JOIN Orders o ON u.user_id = o.buyer_id 
+AND YEAR(order_date)='2019'
+GROUP BY 1
+ORDER BY 1
+
+#1159. Market Analysis II ***
+select user_id as seller_id, 
+        (case when favorite_brand = (
+                            select i.item_brand
+                            from Orders o left join Items i
+                            on o.item_id = i.item_id
+                            where o.seller_id = u.user_id 
+                            order by o.order_date
+                            limit 1 offset 1
+                                  ) then "yes" else "no" end
+         ) as "2nd_item_fav_brand"   
+from Users u 
+
 #1164. Product Price at a Given Date
+**Use UNION to combine two tables
+Select p2.product_id, p2.new_price as price from Products p2
+where (p2.Product_id, p2.change_date) in (
+Select product_id, max(change_date) from Products
+Where change_date <= '2019-08-16'
+group by product_id)
+UNION
+Select product_id, 10 as price from Products
+Group by product_id
+having min(change_date) > '2019-08-16'
+
 #1173. Immediate Food Delivery I
 #1174. Immediate Food Delivery II
 #1179. Reformat Department Table
