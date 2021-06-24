@@ -133,10 +133,60 @@ Group by product_id
 having min(change_date) > '2019-08-16'
 
 #1173. Immediate Food Delivery I
+Select round((sum(IF(order_date = customer_pref_delivery_date, 1, 0)) / count(1) ) * 100, 2)  as immediate_percentage
+From delivery
+
 #1174. Immediate Food Delivery II
+**AVG(order_date = customer_pref_delivery_date);
+With cte as (Select delivery_id, customer_id, order_date, customer_pref_delivery_date, 
+             rank () over ( Partition By customer_id Order By order_date ) as rk 
+             From delivery)
+Select round ( AVG ( order_date = customer_pref_delivery_date ) *100, 2) as immediate_percentage from cte where rk=1
+
 #1179. Reformat Department Table
-#1193. Monthly Transactions I
+SELECT id,
+MAX(CASE WHEN month = 'Jan' THEN revenue END) as 'Jan_Revenue',
+MAX(CASE WHEN month = 'Feb' THEN revenue END) as 'Feb_Revenue',
+MAX(CASE WHEN month = 'Mar' THEN revenue END) as 'Mar_Revenue',
+MAX(CASE WHEN month = 'Apr' THEN revenue END) as 'Apr_Revenue',
+MAX(CASE WHEN month = 'May' THEN revenue END) as 'May_Revenue',
+MAX(CASE WHEN month = 'Jun' THEN revenue END) as 'Jun_Revenue',
+MAX(CASE WHEN month = 'Jul' THEN revenue END) as 'Jul_Revenue',
+MAX(CASE WHEN month = 'Aug' THEN revenue END) as 'Aug_Revenue',
+MAX(CASE WHEN month = 'Sep' THEN revenue END) as 'Sep_Revenue',
+MAX(CASE WHEN month = 'Oct' THEN revenue END) as 'Oct_Revenue',
+MAX(CASE WHEN month = 'Nov' THEN revenue END) as 'Nov_Revenue',
+MAX(CASE WHEN month = 'Dec' THEN revenue END) as 'Dec_Revenue'
+FROM Department
+GROUP BY id
+
+#1193. Monthly Transactions I ***
+select left(trans_date, 7) as month, country, count(id) as trans_count, sum(state = 'approved') as approved_count, sum(amount) as trans_total_amount, sum(case when state = 'approved' then amount else 0 end) as approved_total_amount
+from transactions
+group by month, country
+
 #1194. Tournament Winners
+select group_id as GROUP_ID, min(player_id) as PLAYER_ID
+from Players,
+    (select player, sum(score) as score from
+        (select first_player as player, first_score as score from Matches
+        union all
+        select second_player, second_score from Matches) s
+    group by player) PlayerScores
+where Players.player_id = PlayerScores.player and (group_id, score) in
+	(select group_id, max(score)
+	from Players,
+		(select player, sum(score) as score from
+			(select first_player as player, first_score as score from Matches
+			union all
+			select second_player, second_score from Matches) s
+		group by player) PlayerScores
+	where Players.player_id = PlayerScores.player
+	group by group_id)
+group by group_id
+
 #1205. Monthly Transactions II
+
+
 #1211. Queries Quality and Percentage
 #1212. Team Scores in Football Tournament
