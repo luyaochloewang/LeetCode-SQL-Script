@@ -186,7 +186,35 @@ where Players.player_id = PlayerScores.player and (group_id, score) in
 group by group_id
 
 #1205. Monthly Transactions II
-
+SELECT month, country, SUM(CASE WHEN state = "approved" THEN 1 ELSE 0 END) AS approved_count, SUM(CASE WHEN state = "approved" THEN amount ELSE 0 END) AS approved_amount, SUM(CASE WHEN state = "back" THEN 1 ELSE 0 END) AS chargeback_count, SUM(CASE WHEN state = "back" THEN amount ELSE 0 END) AS chargeback_amount
+FROM
+(
+    SELECT LEFT(chargebacks.trans_date, 7) AS month, country, "back" AS state, amount
+    FROM chargebacks
+    JOIN transactions ON chargebacks.trans_id = transactions.id
+    UNION ALL
+    SELECT LEFT(trans_date, 7) AS month, country, state, amount
+    FROM transactions
+    WHERE state = "approved"
+) s
+GROUP BY month, country 
 
 #1211. Queries Quality and Percentage
+Select query_name, round(avg(rating/position),2) quality,  round((sum(if (rating<3, 1,0))/count(query_name))*100 ,2) poor_query_percentage
+From Queries
+group by query_name
+Method 2
+select query_name, round(avg(rating/position),2) as quality, round(avg(rating<3)*100,2) as poor_query_percentage 
+from Queries
+group by 1
+
 #1212. Team Scores in Football Tournament
+Select t.team_id, t.team_name, Sum(Case When team_id=host_team AND host_goals>guest_goals Then 3 Else 0 End)+ 
+                               Sum(Case When team_id=guest_team AND guest_goals>host_goals Then 3 Else 0 End)+
+                               Sum(Case When team_id=host_team AND host_goals=guest_goals Then 1 Else 0 End)+
+                               Sum(Case When team_id=guest_team AND guest_goals>host_goals Then 1 Else 0 End) as num_points
+From Teams
+left join Matches on team_id=host_team OR team_id=guest_team
+GROUP BY team_id
+ORDER BY num_points DESC, team_id ASC;
+
