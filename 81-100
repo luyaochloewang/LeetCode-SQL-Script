@@ -27,8 +27,51 @@ where a.parent_id is null
 order by post_id
 
 #1251. Average Selling Price
+Select p.product_id, round(sum(p.price*u.units)/sum(u.units),2) as average_price from prices p
+inner join unitssold u on p.product_id = u.product_id
+and u.purchase_date between p.start_date and p.end_date
+group by p.product_id
+
 #1264. Page Recommendations
+Select distinct page_id recommended_page from likes 
+where user_id in (Select user2_id from Friendship f1 
+                  where user1_id = 1
+                  UNION
+                  Select user1_id from Friendship f2
+                  Where user2_id = 1)
+And page_id not in (Select page_id from Likes where user_id=1)
+
+select distinct page_id as recommended_page from
+(select case
+when user1_id=1 then user2_id
+when user2_id=1 then user1_id end as user_id
+from Friendship) a
+join Likes on a.user_id=Likes.user_id
+where page_id not in (select page_id from Likes where user_id=1)
+
 #1270. All People Report to the Given Manager
+SELECT e1.employee_id
+FROM Employees e1,
+     Employees e2,
+     Employees e3
+WHERE e1.manager_id = e2.employee_id
+  AND e2.manager_id = e3.employee_id
+  AND e3.manager_id = 1 
+  AND e1.employee_id != 1
+  
+WITH CTE AS (
+    SELECT employee_id
+    FROM Employees
+    WHERE manager_id = 1 AND employee_id != 1
+    UNION ALL
+    SELECT e.employee_id
+    FROM CTE c INNER JOIN Employees e ON c.employee_id = e.manager_id
+)
+SELECT employee_id
+FROM CTE
+ORDER BY employee_id
+OPTION (MAXRECURSION 3);
+
 #
 #
 #
