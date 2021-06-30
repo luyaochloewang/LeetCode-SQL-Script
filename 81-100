@@ -111,12 +111,80 @@ sum(score_points) Over (partition by gender Order by day) total
 From Scores
 
 #1321. Restaurant Growth
+**Create two table and combine together. 
+SELECT a.visited_on AS visited_on, SUM(b.day_sum) AS amount,
+       ROUND(AVG(b.day_sum), 2) AS average_amount
+FROM
+  (SELECT visited_on, SUM(amount) AS day_sum FROM Customer GROUP BY visited_on ) a,
+  (SELECT visited_on, SUM(amount) AS day_sum FROM Customer GROUP BY visited_on ) b
+WHERE DATEDIFF(a.visited_on, b.visited_on) BETWEEN 0 AND 6
+GROUP BY a.visited_on
+HAVING COUNT(b.visited_on) = 7
+Method2
+SELECT   visited_on, 
+         SUM(SUM(amount)) OVER(ORDER BY visited_on ROWS BETWEEN 6 PRECEDING AND CURRENT ROW)   AS'amount',
+         ROUND(CAST(SUM(SUM(amount)) OVER(ORDER BY visited_on ROWS BETWEEN 6 PRECEDING AND CURRENT ROW) AS FLOAT)/7.0 ,2) AS'average_amount' 
+FROM     Customer 
+GROUP BY visited_on
+ORDER BY visited_on
+OFFSET 6 ROWS 
+
 #1322. Ads Performance
+SELECT ad_id, IFNULL(ROUND(AVG(CASE WHEN action = 'Clicked' THEN 1
+                         WHEN action = 'Viewed' THEN 0
+                         ELSE NULL END)*100,2),0) AS ctr
+FROM Ads
+GROUP BY ad_id
+ORDER BY ctr DESC, ad_id
+
 #1327. List the Products Ordered in a Period
-#1336. Number of Transactions per Visit
-#
-#
-#
-#
-#
+select p.product_name,sum(o.unit) as unit from Products p
+join Orders o on p.product_id = o.product_id
+where O.order_date like '2020-02%'
+group by p.product_name
+having sum(o.unit) >= 100
+
+#1336. Number of Transactions per Visit ***
+WITH T AS (
+SELECT ROW_NUMBER() OVER() row_num
+FROM Transactions
+UNION 
+SELECT 0
+), 
+T1 as (
+SELECT COUNT(transaction_date) transaction_count
+FROM Visits v
+LEFT JOIN Transactions t
+ON v.user_id = t.user_id
+AND v.visit_date = transaction_date
+GROUP BY v.user_id, v.visit_date
+)
+
+SELECT row_num transactions_count, COUNT(transaction_count) visits_count
+FROM T
+LEFT JOIN T1
+ON row_num = transaction_count
+GROUP BY row_num
+HAVING row_num <= (SELECT MAX(transaction_count) FROM T1)
+ORDER BY row_num
+
+#1341. Movie Rating
+#1350. Students With Invalid Departments
+#1355. Activity Participants
+#1364. Number of Trusted Contacts of a Customer
+#1369. Get the Second Most Recent Activity ***
+SELECT * 
+FROM UserActivity 
+GROUP BY username 
+HAVING COUNT(*) = 1
+
+UNION ALL
+
+SELECT u1.*
+FROM UserActivity u1 
+LEFT JOIN UserActivity u2 
+    ON u1.username = u2.username AND u1.endDate < u2.endDate
+GROUP BY u1.username, u1.endDate
+HAVING COUNT(u2.endDate) = 1
+
 #
