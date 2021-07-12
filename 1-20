@@ -66,6 +66,12 @@ inner join Department D on E.DepartmentId = D.Id
 where (DepartmentId, Salary) in 
 (select DepartmentId, max(Salary) as max from employee group by departmentId)
 
+SELECT Department, Employee, Salary FROM
+(SELECT DepartmentId, Employee.Name AS Employee, Salary, RANK() OVER (PARTITION BY DepartmentId ORDER BY Salary DESC) AS 'kk', Department.Name AS Department FROM Employee
+INNER JOIN Department
+ON Employee.DepartmentID = Department.Id)  AS AA
+WHERE AA.kk = 1
+
 #185. Department Top Three Salaries
 SELECT Department, employee, salary FROM 
 (SELECT d.name AS Department, e.name AS employee, e.salary,
