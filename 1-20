@@ -42,6 +42,13 @@ select E1.Name
 from Employee as E1, Employee as E2 
 where E1.ManagerId = E2.Id and E1.Salary > E2.Salary
 
+***Use Left Join for concise, 
+select e.name as employee
+                from employee e 
+                left join employee m 
+                on e.Managerid = m.id
+                where e.salary > m.salary
+
 #182. Duplicate Emails
 Select email from person 
 group by email
