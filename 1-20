@@ -3,12 +3,14 @@ SELECT Person.FirstName, Person.LastName, Address.City, Address.State from Perso
 LEFT JOIN Address on Person.PersonId = Address.PersonId;
 
 #176. Second Highest Salary
-# Select the second from the table
+Select the second from the table
 select (
   select distinct Salary from Employee order by Salary Desc limit 1 offset 1
 )as SecondHighestSalary
 
-#177. Nth Highest Salary
+select max(Salary) as 'SecondHighestSalary' from Employee where salary<>(select max(Salary) from Employee);
+
+#177. Nth Highest Salary ***
 CREATE FUNCTION getNthHighestSalary(N INT) RETURNS INT
 BEGIN
 DECLARE M INT;
@@ -29,6 +31,11 @@ FROM Scores s
 select distinct Num as ConsecutiveNums
 from Logs
 where (Id + 1, Num) in (select * from Logs) and (Id + 2, Num) in (select * from Logs)
+
+select distinct l1.num as consecutivenums from logs l1, logs l2, logs l3
+where l1.Id = l2.id -1 and l2.id = l3.id -1
+and l1.num = l2.num
+and l2.num = l3.num;
 
 #181. Employees Earning More Than Their Managers
 select E1.Name 
