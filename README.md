@@ -1,1 +1,1 @@
-I store my LeetCode SQL Answer at this repository.
+Repository of LeetCode SQL Practice 
